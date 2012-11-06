@@ -1,0 +1,13 @@
+# Niconico Live Alert Plugin 0.1.0
+# @author     ucchy
+# @license    GPLv2
+# @copyright  Copyright ucchy 2012
+
+
+# NOTE: Please set community or user at least.
+
+# Target community.  ex) community: [co1295679, co9999999, co11111111]
+community: []
+
+# Target user.       ex) user: [80190, 99999999, 111111111]
+user: []
