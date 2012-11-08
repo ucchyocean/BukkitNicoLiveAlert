@@ -30,16 +30,22 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
             return false;
         }
 
-        if ( args[0].equalsIgnoreCase("pause") ) {
-            plugin.connector.pause();
-            sender.sendMessage("Nico Live Alert Plugin was paused.");
-            plugin.logger.info("Nico Live Alert Plugin was paused.");
+        if ( args[0].equalsIgnoreCase("disconnect") ) {
+            if ( plugin.disconnect() ) {
+                sender.sendMessage("Nico Live Alert Plugin was disconnected from alert server.");
+                plugin.logger.info("Nico Live Alert Plugin was disconnected from alert server.");
+            } else {
+                sender.sendMessage("Nico Live Alert Plugin has disconnected already.");
+            }
             return true;
 
-        } else if ( args[0].equalsIgnoreCase("start") ) {
-            plugin.connector.start();
-            sender.sendMessage("Nico Live Alert Plugin was started.");
-            plugin.logger.info("Nico Live Alert Plugin was started.");
+        } else if ( args[0].equalsIgnoreCase("connect") ) {
+            if ( plugin.connect() ) {
+                sender.sendMessage("Nico Live Alert Plugin was connected to alert server.");
+                plugin.logger.info("Nico Live Alert Plugin was connected to alert server.");
+            } else {
+                sender.sendMessage("Nico Live Alert Plugin has connected already.");
+            }
             return true;
 
         } else if ( args[0].equalsIgnoreCase("reload") ) {

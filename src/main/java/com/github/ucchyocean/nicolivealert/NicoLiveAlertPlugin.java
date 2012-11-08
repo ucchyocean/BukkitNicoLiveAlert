@@ -29,7 +29,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
     private String messageTemplate;
     protected List<String> community;
     protected List<String> user;
-    protected NicoLiveConnector connector;
+    private NicoLiveConnector connector;
     protected Thread connectorThread;
 
     /**
@@ -52,9 +52,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
 
         // スレッドを起動してアラートサーバーの監視を開始する
-        connector = new NicoLiveConnector(this);
-        connectorThread = new Thread(connector);
-        connectorThread.start();
+        connect();
     }
 
     /**
@@ -63,12 +61,38 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-        connector.stop();
-        try {
-            connectorThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        disconnect();
+    }
+
+    /**
+     * スレッドを起動してアラートサーバーの監視を開始する
+     */
+    protected boolean connect() {
+        if ( connector == null ) {
+            connector = new NicoLiveConnector(this);
+            connectorThread = new Thread(connector);
+            connectorThread.start();
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * アラートサーバーとの接続を切断する
+     */
+    protected boolean disconnect() {
+        if ( connector != null ) {
+            connector.stop();
+            try {
+                connectorThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            connector = null;
+            connectorThread = null;
+            return true;
+        }
+        return false;
     }
 
     /**

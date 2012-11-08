@@ -1,6 +1,6 @@
 name: NicoLiveAlert
 main: com.github.ucchyocean.nicolivealert.NicoLiveAlertPlugin
-version: 0.1.0
+version: 0.2.0
 authors: [ucchy]
 load: startup
 description: Niconico Live Alert Plugin.
@@ -8,7 +8,7 @@ commands:
   nicolivealert:
     description: Niconico live alert plugin maintenance command.
     aliases: nla
-    usage: /<command> pause|start|reload
+    usage: /<command> disconnect|connect|reload
     permission: nicolivealert
     permission-message: You don't have permission <permission>
 permissions:

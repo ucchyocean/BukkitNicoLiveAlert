@@ -40,7 +40,6 @@ public class NicoLiveConnector implements Runnable {
     private String thread;
     private NicoLiveAlertPlugin plugin;
     private boolean isCanceled;
-    private boolean isPaused;
 
     /**
      * コンストラクタ。引数に、イベント通知先のNicoLiveAlertPluginを指定する。
@@ -50,7 +49,6 @@ public class NicoLiveConnector implements Runnable {
         this.plugin = plugin;
         pattern = Pattern.compile(REGEX_CHAT);
         isCanceled = false;
-        isPaused = false;
     }
 
     /**
@@ -71,20 +69,6 @@ public class NicoLiveConnector implements Runnable {
      */
     public void stop() {
         isCanceled = true;
-    }
-
-    /**
-     * NicoLiveConnectorを一時停止する。
-     */
-    public void pause() {
-        isPaused = true;
-    }
-
-    /**
-     * 一時停止していたNicoLiveConnectorを再開する。
-     */
-    public void start() {
-        isPaused = false;
     }
 
     /**
@@ -159,7 +143,7 @@ public class NicoLiveConnector implements Runnable {
             out.writeBytes("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-1\"/>\0");
             out.flush();
 
-            plugin.logger.info("Connected. Starting to listen.");
+            plugin.logger.info("Connected to alert server.");
 
             int len;
             byte[] buffer = new byte[1024];
@@ -169,9 +153,10 @@ public class NicoLiveConnector implements Runnable {
                 Matcher matcher = pattern.matcher(data);
                 while ( matcher.find() ) {
 
-                    if ( !isPaused && (
-                            plugin.community.contains(matcher.group(2)) ||
-                            plugin.community.contains(matcher.group(3)) ) ) {
+                    //plugin.logger.finest(matcher.group(0));
+
+                    if ( plugin.community.contains(matcher.group(2)) ||
+                            plugin.community.contains(matcher.group(3)) ) {
 
                         AlertFoundEvent event = new AlertFoundEvent();
                         event.id = matcher.group(1);
@@ -196,6 +181,8 @@ public class NicoLiveConnector implements Runnable {
         } catch (IOException e) {
             throw new NicoLiveAlertException("Error at starting listen!", e);
         }
+
+        plugin.logger.info("Disconnected from alert server.");
     }
 
     /**
