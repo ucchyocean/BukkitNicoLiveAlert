@@ -46,6 +46,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         } catch (NicoLiveAlertException e) {
             e.printStackTrace();
             getServer().getPluginManager().disablePlugin(this);
+            return;
         }
 
         // コマンドをサーバーに登録
