@@ -39,7 +39,7 @@ public class NicoLiveConnector implements Runnable {
     private int port;
     private String thread;
     private NicoLiveAlertPlugin plugin;
-    private boolean isCanceled;
+    protected boolean isCanceled;
 
     /**
      * コンストラクタ。引数に、イベント通知先のNicoLiveAlertPluginを指定する。
@@ -61,6 +61,7 @@ public class NicoLiveConnector implements Runnable {
             startListen();
         } catch (NicoLiveAlertException e) {
             e.printStackTrace();
+            isCanceled = true;
         }
     }
 
@@ -146,8 +147,6 @@ public class NicoLiveConnector implements Runnable {
 
             out.writeBytes("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-1\"/>\0");
             out.flush();
-            out.close();
-            out = null;
 
             plugin.logger.info("Connected to alert server.");
 

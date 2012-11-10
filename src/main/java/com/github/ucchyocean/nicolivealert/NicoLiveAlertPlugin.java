@@ -69,7 +69,8 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      * スレッドを起動してアラートサーバーの監視を開始する
      */
     protected boolean connect() {
-        if ( connector == null ) {
+        if ( connector == null ||
+                ( connector != null && connector.isCanceled ) ) {
             connector = new NicoLiveConnector(this);
             connectorThread = new Thread(connector);
             connectorThread.start();
