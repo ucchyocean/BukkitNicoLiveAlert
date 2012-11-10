@@ -3,6 +3,7 @@
  */
 package com.github.ucchyocean.nicolivealert;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -53,6 +54,9 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
                 plugin.reloadConfigFile();
             } catch (NicoLiveAlertException e) {
                 e.printStackTrace();
+                sender.sendMessage(ChatColor.DARK_RED + "Nico Live Alert Plugin could not reload config.yml!");
+                plugin.logger.info(ChatColor.DARK_RED + "Nico Live Alert Plugin could not reload config.yml!");
+                return true;
             }
             sender.sendMessage("Nico Live Alert Plugin reloaded config.yml.");
             plugin.logger.info("Nico Live Alert Plugin reloaded config.yml.");

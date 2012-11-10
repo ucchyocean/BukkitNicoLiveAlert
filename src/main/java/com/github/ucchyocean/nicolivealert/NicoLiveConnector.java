@@ -133,15 +133,21 @@ public class NicoLiveConnector implements Runnable {
      */
     private void startListen() throws NicoLiveAlertException {
 
+        Socket socket = null;
+        DataOutputStream out = null;
+        DataInputStream in = null;
+
         try {
             plugin.logger.info("Connecting to " + addr + ":" + port + " ... ");
 
-            Socket socket = new Socket(addr, port);
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            DataInputStream in = new DataInputStream(socket.getInputStream());
+            socket = new Socket(addr, port);
+            out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
 
             out.writeBytes("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-1\"/>\0");
             out.flush();
+            out.close();
+            out = null;
 
             plugin.logger.info("Connected to alert server.");
 
@@ -156,7 +162,8 @@ public class NicoLiveConnector implements Runnable {
                     //plugin.logger.finest(matcher.group(0));
 
                     if ( plugin.community.contains(matcher.group(2)) ||
-                            plugin.community.contains(matcher.group(3)) ) {
+                            plugin.user.contains(matcher.group(3)) ) {
+                        // 一致するコミュニティまたはユーザーが見つかった
 
                         AlertFoundEvent event = new AlertFoundEvent();
                         event.id = matcher.group(1);
@@ -180,6 +187,28 @@ public class NicoLiveConnector implements Runnable {
             throw new NicoLiveAlertException("Error at starting listen!", e);
         } catch (IOException e) {
             throw new NicoLiveAlertException("Error at starting listen!", e);
+        } finally {
+            if ( out != null ) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    // do nothing.
+                }
+            }
+            if ( in != null ) {
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    // do nothing.
+                }
+            }
+            if ( socket != null ) {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    // do nothing.
+                }
+            }
         }
 
         plugin.logger.info("Disconnected from alert server.");
@@ -193,27 +222,25 @@ public class NicoLiveConnector implements Runnable {
     private static String[] getCommunityNameAndTitle(String programId) {
 
         String[] result = new String[2];
-        String community = "";
-        String title = "";
+
+        HttpURLConnection urlconn = null;
+        BufferedReader reader = null;
 
         try {
             URL url = new URL("http://live.nicovideo.jp/api/getstreaminfo/lv" + programId);
 
-            HttpURLConnection urlconn = (HttpURLConnection)url.openConnection();
+            urlconn = (HttpURLConnection)url.openConnection();
             urlconn.setRequestMethod("GET");
             urlconn.setInstanceFollowRedirects(false);
             urlconn.setRequestProperty("Accept-Language", "ja;q=0.7,en;q=0.3");
             urlconn.connect();
 
-            BufferedReader reader =
-                new BufferedReader(new InputStreamReader(urlconn.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(urlconn.getInputStream()));
 
             DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document document = docBuilder.parse(urlconn.getInputStream(), "UTF-8");
-            community = document.getElementsByTagName("name").item(0).getTextContent();
-            title = document.getElementsByTagName("title").item(0).getTextContent();
-
-            reader.close();
+            result[0] = document.getElementsByTagName("name").item(0).getTextContent();
+            result[1] = document.getElementsByTagName("title").item(0).getTextContent();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -227,10 +254,23 @@ public class NicoLiveConnector implements Runnable {
             e.printStackTrace();
         } catch (SAXException e) {
             e.printStackTrace();
+        } finally {
+            if ( reader != null ) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // do nothing.
+                }
+            }
+            if ( urlconn != null ) {
+                try {
+                    urlconn.disconnect();
+                } catch (Exception e) {
+                    // do nothing.
+                }
+            }
         }
 
-        result[0] = community;
-        result[1] = title;
         return result;
     }
 }
