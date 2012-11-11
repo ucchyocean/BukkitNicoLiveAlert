@@ -213,9 +213,9 @@ public class NicoLiveConnector implements Runnable {
             Document document = docBuilder.parse(urlconn.getInputStream(), "UTF-8");
 
             for ( int i=0; i<targetTags.length; i++ ) {
-                NodeList list = document.getElementsByTagName(targetTags[1]);
+                NodeList list = document.getElementsByTagName(targetTags[i]);
                 if ( list.getLength() <= 0 ) {
-                    throw new NicoLiveAlertException("Error to get tag " + targetTags[1] + "!");
+                    throw new NicoLiveAlertException("Error to get tag " + targetTags[i] + "!");
                 }
                 results[i] = list.item(0).getTextContent();
             }
