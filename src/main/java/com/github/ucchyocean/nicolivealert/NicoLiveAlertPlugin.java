@@ -107,6 +107,8 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         if ( !configFile.exists() ) {
             copyFileFromJar(configFile, "config.yml");
         }
+
+        reloadConfig();
         FileConfiguration config = getConfig();
 
         messageTemplate = config.getString("messageTemplate", "ニコ生 [%s]で[%s]が開始しました！");
