@@ -4,16 +4,9 @@
 package com.github.ucchyocean.nicolivealert;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.jar.JarFile;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,9 +16,11 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class NicoLiveAlertPlugin extends JavaPlugin {
 
-    private static final String URL_TEMPLATE = ChatColor.RED + "http://live.nicovideo.jp/watch/lv%s";
+    private static final String URL_TEMPLATE = "http://live.nicovideo.jp/watch/lv%s";
 
     protected Logger logger;
+    private String urlColor;
+    private String urlTemplate;
     private String messageTemplate;
     protected List<String> community;
     protected List<String> user;
@@ -105,52 +100,19 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
 
         File configFile = new File(getDataFolder(), "config.yml");
         if ( !configFile.exists() ) {
-            copyFileFromJar(configFile, "config.yml");
+            Utility.copyFileFromJar(getFile(), configFile, "config.yml", false);
         }
 
         reloadConfig();
         FileConfiguration config = getConfig();
 
-        messageTemplate = config.getString("messageTemplate", "ニコ生 [%s]で[%s]が開始しました！");
+        urlColor = config.getString("urlColor", "&c");
         community = config.getStringList("community");
         user = config.getStringList("user");
-    }
+        String message_temp = config.getString("messageTemplate", "&cニコ生 [%s]で[%s]が開始しました！&r");
 
-    /**
-     * jarファイルの中に格納されているファイルを、jarファイルの外にコピーするメソッド
-     * @param outputFile コピー先
-     * @param inputFileName コピー元
-     */
-    private void copyFileFromJar(File outputFile, String inputFileName) {
-
-        InputStream is;
-        FileOutputStream fos;
-        File parent = outputFile.getParentFile();
-        if ( !parent.exists() ) {
-            parent.mkdirs();
-        }
-
-        try {
-            JarFile jarFile = new JarFile(getFile());
-            ZipEntry zipEntry = jarFile.getEntry(inputFileName);
-            is = jarFile.getInputStream(zipEntry);
-
-            fos = new FileOutputStream(outputFile);
-
-            byte[] buf = new byte[8192];
-            int len;
-            while ( (len = is.read(buf)) != -1 ) {
-                fos.write(buf, 0, len);
-            }
-            fos.flush();
-            fos.close();
-            is.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        messageTemplate = Utility.replaceColorCode(message_temp);
+        urlTemplate = Utility.replaceColorCode(urlColor) + URL_TEMPLATE;
     }
 
     /**
@@ -160,7 +122,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
     protected void onAlertFound(AlertFoundEvent event) {
 
         String startMessage = String.format(messageTemplate, event.communityName, event.title);
-        String urlMessage = String.format(URL_TEMPLATE, event.id);
+        String urlMessage = String.format(urlTemplate, event.id);
 
         getServer().broadcastMessage(startMessage);
         getServer().broadcastMessage(urlMessage);
