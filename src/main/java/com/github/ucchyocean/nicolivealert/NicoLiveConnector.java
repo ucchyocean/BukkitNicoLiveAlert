@@ -135,6 +135,18 @@ public class NicoLiveConnector implements Runnable {
                             event.title = "";
                         }
 
+                        event.communityNickname = event.communityName;
+                        event.userNickname = event.user;
+
+                        if ( plugin.communityNicknames != null
+                                && plugin.communityNicknames.contains(event.community) ) {
+                            event.communityNickname = plugin.communityNicknames.get(event.community).toString();
+                        }
+                        if ( plugin.userNicknames != null
+                                && plugin.userNicknames.contains(event.user) ) {
+                            event.userNickname = plugin.userNicknames.get(event.user).toString();
+                        }
+
                         plugin.onAlertFound(event);
                     }
                 }

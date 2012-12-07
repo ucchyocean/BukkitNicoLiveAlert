@@ -20,4 +20,9 @@ public class AlertFoundEvent {
     protected String title;
     /** 放送しているコミュニティ名 */
     protected String communityName;
+
+    /** コミュニティニックネーム */
+    protected String communityNickname;
+    /** ユーザーニックネーム */
+    protected String userNickname;
 }
