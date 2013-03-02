@@ -1,5 +1,7 @@
 /*
- * Copyright ucchy 2012
+ * @author     ucchy
+ * @license    GPLv3
+ * @copyright  Copyright ucchy 2012-2013
  */
 package com.github.ucchyocean.nicolivealert;
 
@@ -174,6 +176,12 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         getServer().broadcastMessage(urlMessage);
     }
 
+    /**
+     * 文字列の中のキーワードを置き換えするメソッド
+     * @param source 置き換え元の文字列
+     * @param event 置き換えに使用するイベント
+     * @return 置き換え後の文字列
+     */
     private String replaceKeywords(String source, AlertFoundEvent event) {
 
         String result = source;

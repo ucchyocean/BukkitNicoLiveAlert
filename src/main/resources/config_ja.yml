@@ -1,7 +1,7 @@
 # Niconico Live Alert Plugin 1.3.0
 # @author     ucchy
-# @license    GPLv2
-# @copyright  Copyright ucchy 2012
+# @license    GPLv3
+# @copyright  Copyright ucchy 2012-2013
 
 
 # アラート対象にするコミュニティ。
@@ -30,7 +30,7 @@ messageTemplate5: ''
 urlColor: '&d'
 
 # コミュニティのニックネーム設定。
-communityNicknames: 
+communityNicknames:
   'co1295679' : '俺のやる気無しコミュ'
 
 # ユーザーのニックネーム設定。
