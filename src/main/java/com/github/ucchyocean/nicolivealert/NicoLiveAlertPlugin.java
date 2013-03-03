@@ -93,11 +93,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
     protected boolean disconnect() {
         if ( connector != null ) {
             connector.stop();
-            try {
-                connectorThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                connectorThread.join();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             connector = null;
             connectorThread = null;
             return true;
