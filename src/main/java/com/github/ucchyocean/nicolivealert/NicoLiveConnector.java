@@ -35,6 +35,9 @@ public class NicoLiveConnector implements Runnable {
     // 取得したchatタグの検索とパース用の正規表現
     private static final String REGEX_CHAT = "<chat [^>]*>([^,]*),([^,]*),([^,]*)</chat>";
 
+    // 前回通知を実行した放送ID
+    private static String lastAlertID;
+
     private Pattern pattern;
     private NicoLiveAlertPlugin plugin;
     protected boolean isCanceled;
@@ -127,6 +130,13 @@ public class NicoLiveConnector implements Runnable {
                         event.community = matcher.group(2);
                         event.user = matcher.group(3);
 
+                        // 前回通知した放送と同じIDなら、無視する。
+                        if ( event.id.equals(lastAlertID) ) {
+                            plugin.logger.info("Duplicated alert found!(lv" + event.id +") This alert was ignored.");
+                            continue;
+                        }
+                        lastAlertID = event.id;
+
                         try {
                             String[] coNameAndTitle = getCommunityNameAndTitle(event.id);
                             event.communityName = coNameAndTitle[0];
@@ -159,9 +169,9 @@ public class NicoLiveConnector implements Runnable {
             }
 
         } catch (UnknownHostException e) {
-            throw new NicoLiveAlertException("Error at starting listen!", e);
+            throw new NicoLiveAlertException("Error at listening alerts!!", e);
         } catch (IOException e) {
-            throw new NicoLiveAlertException("Error at starting listen!", e);
+            throw new NicoLiveAlertException("Error at listening alerts!!", e);
         } finally {
             if ( out != null ) {
                 try {
