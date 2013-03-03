@@ -1,6 +1,6 @@
 name: NicoLiveAlert
 main: com.github.ucchyocean.nicolivealert.NicoLiveAlertPlugin
-version: 1.3.0
+version: 1.4.0
 authors: [ucchy]
 load: startup
 description: Niconico Live Alert Plugin.
