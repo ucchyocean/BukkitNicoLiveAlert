@@ -6,6 +6,7 @@
 package com.github.ucchyocean.nicolivealert;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -39,6 +40,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
     protected MemorySection userNicknames;
     private NicoLiveConnector connector;
     protected Thread connectorThread;
+    protected List<String> titleKeywords;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -120,7 +122,13 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         FileConfiguration config = getConfig();
 
         community = config.getStringList("community");
+        if ( community == null ) {
+            community = new ArrayList<String>();
+        }
         user = config.getStringList("user");
+        if ( user == null ) {
+            user = new ArrayList<String>();
+        }
 
         Object communityNicknames_temp = config.get("communityNicknames");
         if ( communityNicknames_temp != null ) {
@@ -144,6 +152,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         messageTemplate4 = Utility.replaceColorCode(message4_temp);
         messageTemplate5 = Utility.replaceColorCode(message5_temp);
         urlTemplate = Utility.replaceColorCode(urlColor) + URL_TEMPLATE;
+
+        titleKeywords = config.getStringList("titleKeywords");
+        if ( titleKeywords == null ) {
+            titleKeywords = new ArrayList<String>();
+        }
     }
 
     /**
@@ -152,6 +165,24 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      */
     protected void onAlertFound(AlertFoundEvent event) {
 
+        // タイトルキーワードが設定されており、キーワードが見つからない場合は、
+        // 通知せずに終了する。一応、ログは出力しておく。
+        if ( titleKeywords.size() > 0 ) {
+            boolean keywordFound = false;
+            for ( String keyword : titleKeywords ) {
+                if ( event.title.contains(keyword) ) {
+                    keywordFound = true;
+                    break;
+                }
+            }
+            if ( !keywordFound ) {
+                logger.info("Alert was found. But title didn't contain the keywords.");
+                logger.info(String.format(urlTemplate, event.id));
+                return;
+            }
+        }
+
+        // 各通知行をキーワードで置き返して、ブロードキャストに流す。
         String startMessage = replaceKeywords(messageTemplate, event);
         getServer().broadcastMessage(startMessage);
 

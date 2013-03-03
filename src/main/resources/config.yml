@@ -24,3 +24,6 @@ communityNicknames:
 
 # User nicknames.
 userNicknames:
+
+# Title keyword filters.
+titleKeywords: []
