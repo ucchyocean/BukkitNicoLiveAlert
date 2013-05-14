@@ -12,13 +12,16 @@ import java.util.logging.Logger;
 
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * @author ucchy
  * ニコ生アラートプラグイン
  */
-public class NicoLiveAlertPlugin extends JavaPlugin {
+public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
     private static final String URL_TEMPLATE = "http://live.nicovideo.jp/watch/lv%s";
 
@@ -38,8 +41,8 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
     protected List<String> user;
     protected MemorySection communityNicknames;
     protected MemorySection userNicknames;
+    private BukkitTask task;
     private NicoLiveConnector connector;
-    protected Thread connectorThread;
     protected List<String> titleKeywords;
 
     /**
@@ -62,6 +65,9 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
 
+        // 監視イベントを登録
+        getServer().getPluginManager().registerEvents(this, this);
+
         // スレッドを起動してアラートサーバーの監視を開始する
         connect();
     }
@@ -79,11 +85,9 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      * スレッドを起動してアラートサーバーの監視を開始する
      */
     protected boolean connect() {
-        if ( connector == null ||
-                ( connector != null && connector.isCanceled ) ) {
+        if ( task == null ) {
             connector = new NicoLiveConnector(this);
-            connectorThread = new Thread(connector);
-            connectorThread.start();
+            task = getServer().getScheduler().runTaskAsynchronously(this, connector);
             return true;
         }
         return false;
@@ -93,15 +97,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      * アラートサーバーとの接続を切断する
      */
     protected boolean disconnect() {
-        if ( connector != null ) {
-            connector.stop();
-//            try {
-//                connectorThread.join();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-            connector = null;
-            connectorThread = null;
+        if ( task != null ) {
+            // TODO: 正しくキャンセルされるか、チェックする
+            connector.cancel();
+            getServer().getScheduler().cancelTask(task.getTaskId());
+            task = null;
             return true;
         }
         return false;
@@ -163,21 +163,22 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      * 監視対象の放送が見つかったときに呼び出されるメソッド
      * @param event イベント。見つかった放送の詳細が格納される。
      */
-    protected void onAlertFound(AlertFoundEvent event) {
+    @EventHandler
+    public void onAlertFound(NicoLiveAlertFoundEvent event) {
 
         // タイトルキーワードが設定されており、キーワードが見つからない場合は、
         // 通知せずに終了する。一応、ログは出力しておく。
         if ( titleKeywords.size() > 0 ) {
             boolean keywordFound = false;
             for ( String keyword : titleKeywords ) {
-                if ( event.title.contains(keyword) ) {
+                if ( event.getTitle().contains(keyword) ) {
                     keywordFound = true;
                     break;
                 }
             }
             if ( !keywordFound ) {
                 logger.info("Alert was found. But title didn't contain the keywords.");
-                logger.info(String.format(urlTemplate, event.id));
+                logger.info(String.format(urlTemplate, event.getId()));
                 return;
             }
         }
@@ -203,7 +204,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
             getServer().broadcastMessage(startMessage5);
         }
 
-        String urlMessage = String.format(urlTemplate, event.id);
+        String urlMessage = String.format(urlTemplate, event.getId());
         getServer().broadcastMessage(urlMessage);
     }
 
@@ -213,17 +214,17 @@ public class NicoLiveAlertPlugin extends JavaPlugin {
      * @param event 置き換えに使用するイベント
      * @return 置き換え後の文字列
      */
-    private String replaceKeywords(String source, AlertFoundEvent event) {
+    private String replaceKeywords(String source, NicoLiveAlertFoundEvent event) {
 
         String result = source;
         if ( result.contains(KEYWORD_COMMUNITY) ) {
-            result = result.replace(KEYWORD_COMMUNITY, event.communityNickname);
+            result = result.replace(KEYWORD_COMMUNITY, event.getCommunityNickname());
         }
         if ( result.contains(KEYWORD_USER) ) {
-            result = result.replace(KEYWORD_USER, event.userNickname);
+            result = result.replace(KEYWORD_USER, event.getUserNickname());
         }
         if ( result.contains(KEYWORD_TITLE) ) {
-            result = result.replace(KEYWORD_TITLE, event.title);
+            result = result.replace(KEYWORD_TITLE, event.getTitle());
         }
         return result;
     }

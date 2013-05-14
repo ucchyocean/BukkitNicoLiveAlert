@@ -25,12 +25,13 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * @author ucchy
  * ニコニコ生放送のAPIへの接続クラス
  */
-public class NicoLiveConnector implements Runnable {
+public class NicoLiveConnector extends BukkitRunnable {
 
     // 取得したchatタグの検索とパース用の正規表現
     private static final String REGEX_CHAT = "<chat [^>]*>([^,]*),([^,]*),([^,]*)</chat>";
@@ -59,7 +60,7 @@ public class NicoLiveConnector implements Runnable {
 
         try {
             String[] alertServerInfo = getAlertServer();
-            startListen(alertServerInfo);
+            listen(alertServerInfo);
         } catch (NicoLiveAlertException e) {
             e.printStackTrace();
             isCanceled = true;
@@ -67,10 +68,12 @@ public class NicoLiveConnector implements Runnable {
     }
 
     /**
-     * NicoLiveConnectorを停止する。すぐには停止できないので、このメソッドを呼んだ後に、スレッドにjoinすること。
+     * NicoLiveConnectorを停止する。
      */
-    public void stop() {
+    @Override
+    public void cancel() {
         isCanceled = true;
+        super.cancel();
     }
 
     /**
@@ -89,7 +92,7 @@ public class NicoLiveConnector implements Runnable {
      * @param server getAlertServer() の取得結果を指定する。
      * @throws NicoLiveAlertException サーバーとの接続が切断された時とか
      */
-    private void startListen(String[] server) throws NicoLiveAlertException {
+    private void listen(String[] server) throws NicoLiveAlertException {
 
         String addr = server[0];
         int port = Integer.parseInt(server[1]);
@@ -125,41 +128,45 @@ public class NicoLiveConnector implements Runnable {
                             plugin.user.contains(matcher.group(3)) ) {
                         // 一致するコミュニティまたはユーザーが見つかった
 
-                        AlertFoundEvent event = new AlertFoundEvent();
-                        event.id = matcher.group(1);
-                        event.community = matcher.group(2);
-                        event.user = matcher.group(3);
+                        String id = matcher.group(1);
+                        String community = matcher.group(2);
+                        String user = matcher.group(3);
 
                         // 前回通知した放送と同じIDなら、無視する。
-                        if ( event.id.equals(lastAlertID) ) {
-                            plugin.logger.info("Duplicated alert found!(lv" + event.id +") This alert was ignored.");
+                        if ( id.equals(lastAlertID) ) {
+                            plugin.logger.info("Duplicated alert found!(lv" + id +") This alert was ignored.");
                             continue;
                         }
-                        lastAlertID = event.id;
+                        lastAlertID = id;
 
+                        String communityName, title;
                         try {
-                            String[] coNameAndTitle = getCommunityNameAndTitle(event.id);
-                            event.communityName = coNameAndTitle[0];
-                            event.title = coNameAndTitle[1];
+                            String[] coNameAndTitle = getCommunityNameAndTitle(id);
+                            communityName = coNameAndTitle[0];
+                            title = coNameAndTitle[1];
                         } catch (NicoLiveAlertException e) {
                             e.printStackTrace();
-                            event.communityName = "";
-                            event.title = "";
+                            communityName = "";
+                            title = "";
                         }
 
-                        event.communityNickname = event.communityName;
-                        event.userNickname = event.user;
+                        String communityNickname = communityName;
+                        String userNickname = user;
 
                         if ( plugin.communityNicknames != null
-                                && plugin.communityNicknames.contains(event.community) ) {
-                            event.communityNickname = plugin.communityNicknames.get(event.community).toString();
+                                && plugin.communityNicknames.contains(community) ) {
+                            communityNickname = plugin.communityNicknames.get(community).toString();
                         }
                         if ( plugin.userNicknames != null
-                                && plugin.userNicknames.contains(event.user) ) {
-                            event.userNickname = plugin.userNicknames.get(event.user).toString();
+                                && plugin.userNicknames.contains(user) ) {
+                            userNickname = plugin.userNicknames.get(user).toString();
                         }
 
-                        plugin.onAlertFound(event);
+                        // イベントを作成して、コールする
+                        // TODO BukkitAPIは直接呼出しできないかもしれないので、確認すること
+                        NicoLiveAlertFoundEvent event = new NicoLiveAlertFoundEvent(
+                                id, community, user, title, communityName, communityNickname, userNickname);
+                        plugin.getServer().getPluginManager().callEvent(event);
                     }
                 }
 
