@@ -21,11 +21,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.bukkit.scheduler.BukkitRunnable;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * @author ucchy
@@ -73,7 +73,7 @@ public class NicoLiveConnector extends BukkitRunnable {
     @Override
     public void cancel() {
         isCanceled = true;
-        super.cancel();
+        //super.cancel();
     }
 
     /**
