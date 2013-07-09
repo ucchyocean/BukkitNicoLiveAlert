@@ -98,7 +98,6 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
      */
     protected boolean disconnect() {
         if ( task != null ) {
-            // TODO: 正しくキャンセルされるか、チェックする
             connector.cancel();
             getServer().getScheduler().cancelTask(task.getTaskId());
             task = null;

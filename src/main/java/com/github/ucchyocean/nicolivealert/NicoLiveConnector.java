@@ -163,7 +163,6 @@ public class NicoLiveConnector extends BukkitRunnable {
                         }
 
                         // イベントを作成して、コールする
-                        // TODO BukkitAPIは直接呼出しできないかもしれないので、確認すること
                         NicoLiveAlertFoundEvent event = new NicoLiveAlertFoundEvent(
                                 id, community, user, title, communityName, communityNickname, userNickname);
                         plugin.getServer().getPluginManager().callEvent(event);
