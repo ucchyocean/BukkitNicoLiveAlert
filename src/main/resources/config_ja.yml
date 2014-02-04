@@ -1,8 +1,7 @@
-# Niconico Live Alert Plugin 1.5.0
+# ${project.name} v${project.version}
 # @author     ucchy
-# @license    GPLv3
-# @copyright  Copyright ucchy 2012-2013
-
+# @license    LGPLv3
+# @copyright  Copyright ucchy 2013
 
 # アラート対象にするコミュニティ。
 # 例) community: [co1295679, co9999999, co11111111]
@@ -19,19 +18,21 @@ user: []
 # &? はカラーコードに置き換えられます。
 # 詳細はトピックをご参照ください。
 # http://forum.minecraftuser.jp/viewtopic.php?f=38&t=7768
-messageTemplate: '&cニコ生 [$com]で[$title]が開始しました！&r'
-messageTemplate2: ''
-messageTemplate3: ''
-messageTemplate4: ''
+messageTemplate: '&cニコ生が開始しました！&r'
+messageTemplate2: '&bコミュニティ：$com'
+messageTemplate3: '&b放送者：$user'
+messageTemplate4: '&b$title'
 messageTemplate5: ''
 
-# URLメッセージのカラーコード。
-# 詳細はトピックをご参照ください。
-urlColor: '&d'
+# 放送URLの通知用メッセージのテンプレート。
+# tellraw コマンドの形式で記載ができます。
+# $url は放送のURLで、置き換えられます。
+messageTemplateURL: '{"text":"＞放送ページはこちら！＜","color":"red","underlined":"true","clickEvent":{"action":"open_url","value":"$url"}}'
 
 # コミュニティのニックネーム設定。
 communityNicknames:
   'co1295679' : '俺のやる気無しコミュ'
+  'co1869834' : '和菓子さんテストコミュ'
 
 # ユーザーのニックネーム設定。
 userNicknames:

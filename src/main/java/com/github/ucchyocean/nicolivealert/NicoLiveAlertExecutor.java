@@ -1,7 +1,7 @@
 /*
  * @author     ucchy
  * @license    LGPLv3
- * @copyright  Copyright ucchy 2012-2013
+ * @copyright  Copyright ucchy 2012
  */
 package com.github.ucchyocean.nicolivealert;
 
@@ -64,6 +64,11 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
             plugin.logger.info("Nico Live Alert Plugin reloaded config.yml.");
             return true;
 
+        } else if ( args[0].equalsIgnoreCase("test") && args.length >= 2 ) {
+            String src = args[1];
+            JsonChatBroadcasterV17R1.broadcastJson(src);
+            return true;
+            
         }
 
         return false;

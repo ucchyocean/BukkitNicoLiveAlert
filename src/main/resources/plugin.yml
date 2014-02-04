@@ -1,9 +1,8 @@
-name: NicoLiveAlert
+name: ${project.name}
 main: com.github.ucchyocean.nicolivealert.NicoLiveAlertPlugin
-version: 1.5.0
-authors: [ucchy]
-load: startup
-description: Niconico Live Alert Plugin.
+version: ${project.version}
+author: ucchy
+description: ${project.description}
 commands:
   nicolivealert:
     description: Niconico live alert plugin maintenance command.

@@ -1,7 +1,7 @@
 /*
  * @author     ucchy
  * @license    LGPLv3
- * @copyright  Copyright ucchy 2012-2013
+ * @copyright  Copyright ucchy 2012
  */
 package com.github.ucchyocean.nicolivealert;
 
@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+
+import org.bukkit.ChatColor;
 
 /**
  * @author ucchy
@@ -118,6 +120,7 @@ public class Utility {
      */
     protected static String replaceColorCode(String source) {
 
-        return source.replaceAll("&([0-9a-fk-or])", "\u00A7$1");
+        //return source.replaceAll("&([0-9a-fk-or])", "\u00A7$1");
+        return ChatColor.translateAlternateColorCodes('&', source);
     }
 }

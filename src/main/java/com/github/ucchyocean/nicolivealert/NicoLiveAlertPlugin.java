@@ -1,7 +1,7 @@
 /*
  * @author     ucchy
  * @license    LGPLv3
- * @copyright  Copyright ucchy 2012-2013
+ * @copyright  Copyright ucchy 2012
  */
 package com.github.ucchyocean.nicolivealert;
 
@@ -28,15 +28,15 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     private static final String KEYWORD_COMMUNITY = "$com";
     private static final String KEYWORD_USER = "$user";
     private static final String KEYWORD_TITLE = "$title";
+    private static final String KEYWORD_URL = "$url";
 
     protected Logger logger;
-    private String urlColor;
-    private String urlTemplate;
     private String messageTemplate;
     private String messageTemplate2;
     private String messageTemplate3;
     private String messageTemplate4;
     private String messageTemplate5;
+    private String messageTemplateURL;
     protected List<String> community;
     protected List<String> user;
     protected MemorySection communityNicknames;
@@ -138,19 +138,21 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
             userNicknames = (MemorySection)userNicknames_temp;
         }
 
-        String message_temp = config.getString("messageTemplate", "&cニコ生 [$com]で[$title]が開始しました！&r");
-        String message2_temp = config.getString("messageTemplate2", "");
-        String message3_temp = config.getString("messageTemplate3", "");
-        String message4_temp = config.getString("messageTemplate4", "");
-        String message5_temp = config.getString("messageTemplate5", "");
-        urlColor = config.getString("urlColor", "&c");
+        messageTemplate = Utility.replaceColorCode(
+                config.getString("messageTemplate", "&cニコ生 [$com]で[$title]が開始しました！&r") );
+        messageTemplate2 = Utility.replaceColorCode(
+                config.getString("messageTemplate2", "") );
+        messageTemplate3 = Utility.replaceColorCode(
+                config.getString("messageTemplate3", "") );
+        messageTemplate4 = Utility.replaceColorCode(
+                config.getString("messageTemplate4", "") );
+        messageTemplate5 = Utility.replaceColorCode(
+                config.getString("messageTemplate5", "") );
 
-        messageTemplate = Utility.replaceColorCode(message_temp);
-        messageTemplate2 = Utility.replaceColorCode(message2_temp);
-        messageTemplate3 = Utility.replaceColorCode(message3_temp);
-        messageTemplate4 = Utility.replaceColorCode(message4_temp);
-        messageTemplate5 = Utility.replaceColorCode(message5_temp);
-        urlTemplate = Utility.replaceColorCode(urlColor) + URL_TEMPLATE;
+        messageTemplateURL = config.getString("messageTemplateURL", 
+                "{\"text\":\"＞放送ページはこちら！＜\","
+                + "\"color\":\"red\",\"underlined\":\"true\",\"clickEvent\":{"
+                + "\"action\":\"open_url\",\"value\":\"$url\"}}");
 
         titleKeywords = config.getStringList("titleKeywords");
         if ( titleKeywords == null ) {
@@ -176,13 +178,12 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
                 }
             }
             if ( !keywordFound ) {
-                logger.info("Alert was found. But title didn't contain the keywords.");
-                logger.info(String.format(urlTemplate, event.getId()));
+                logger.info("Alert was found. But title didn't contain the keywords. " + event.getId());
                 return;
             }
         }
 
-        // 各通知行をキーワードで置き返して、ブロードキャストに流す。
+        // 各通知行をキーワードで置き換えして、ブロードキャストに流す。
         String startMessage = replaceKeywords(messageTemplate, event);
         getServer().broadcastMessage(startMessage);
 
@@ -203,8 +204,13 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
             getServer().broadcastMessage(startMessage5);
         }
 
-        String urlMessage = String.format(urlTemplate, event.getId());
-        getServer().broadcastMessage(urlMessage);
+        String urlMessage = replaceKeywords(messageTemplateURL, event);
+        if ( urlMessage.contains(KEYWORD_URL) ) {
+            String url = String.format(URL_TEMPLATE, event.getId());
+            urlMessage = urlMessage.replace(KEYWORD_URL, url);
+        }
+        
+        JsonChatBroadcasterV17R1.broadcastJson(urlMessage);
     }
 
     /**
