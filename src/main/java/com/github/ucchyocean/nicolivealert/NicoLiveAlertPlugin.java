@@ -139,13 +139,13 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         }
 
         messageTemplate = Utility.replaceColorCode(
-                config.getString("messageTemplate", "&cニコ生 [$com]で[$title]が開始しました！&r") );
+                config.getString("messageTemplate", "&cニコ生が開始しました！") );
         messageTemplate2 = Utility.replaceColorCode(
-                config.getString("messageTemplate2", "") );
+                config.getString("messageTemplate2", "&bコミュニティ：$com") );
         messageTemplate3 = Utility.replaceColorCode(
-                config.getString("messageTemplate3", "") );
+                config.getString("messageTemplate3", "&b放送者：$user") );
         messageTemplate4 = Utility.replaceColorCode(
-                config.getString("messageTemplate4", "") );
+                config.getString("messageTemplate4", "&b$title") );
         messageTemplate5 = Utility.replaceColorCode(
                 config.getString("messageTemplate5", "") );
 
