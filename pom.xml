@@ -68,14 +68,16 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.7.2-R0.3-SNAPSHOT</version>
+<groupId>org.bukkit</groupId>
+
+<artifactId>minecraft-server</artifactId>
+
+<version>1.7.2</version>
     </dependency>
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>craftbukkit</artifactId>
-      <version>1.7.2-R0.3-SNAPSHOT</version>
+      <version>1.7.5-R0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

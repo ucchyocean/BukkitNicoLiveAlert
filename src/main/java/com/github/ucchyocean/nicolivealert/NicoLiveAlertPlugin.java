@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
@@ -45,6 +46,9 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     private NicoLiveConnector connector;
     protected List<String> titleKeywords;
 
+    private boolean isV17R1;
+    private boolean isV17R2;
+
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
      * @see org.bukkit.plugin.java.JavaPlugin#onEnable()
@@ -54,6 +58,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
         logger = getLogger();
 
+        // コンフィグのリロード
         try {
             reloadConfigFile();
         } catch (NicoLiveAlertException e) {
@@ -61,6 +66,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        // サーバーバージョンの取得
+        String ver = getServer().getBukkitVersion();
+        isV17R1 = ver.startsWith("1.7.2-R0.");
+        isV17R2 = ver.startsWith("1.7.5-R0.");
 
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
@@ -114,7 +124,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
         File configFile = new File(getDataFolder(), "config.yml");
         if ( !configFile.exists() ) {
-            Utility.copyFileFromJar(getFile(), configFile, "config_ja.yml", false);
+            Utility.copyFileFromJar(getFile(), configFile, "config_ja.yml");
         }
 
         reloadConfig();
@@ -149,7 +159,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         messageTemplate5 = Utility.replaceColorCode(
                 config.getString("messageTemplate5", "") );
 
-        messageTemplateURL = config.getString("messageTemplateURL", 
+        messageTemplateURL = config.getString("messageTemplateURL",
                 "{\"text\":\"＞放送ページはこちら！＜\","
                 + "\"color\":\"red\",\"underlined\":\"true\",\"clickEvent\":{"
                 + "\"action\":\"open_url\",\"value\":\"$url\"}}");
@@ -205,12 +215,16 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         }
 
         String urlMessage = replaceKeywords(messageTemplateURL, event);
-        if ( urlMessage.contains(KEYWORD_URL) ) {
-            String url = String.format(URL_TEMPLATE, event.getId());
-            urlMessage = urlMessage.replace(KEYWORD_URL, url);
+        String url = String.format(URL_TEMPLATE, event.getId());
+        urlMessage = urlMessage.replace(KEYWORD_URL, url);
+
+        if ( isV17R1 ) {
+            JsonChatBroadcasterV17R1.broadcastJson(urlMessage);
+        } else if ( isV17R2 ) {
+            JsonChatBroadcasterV17R2.broadcastJson(urlMessage);
+        } else {
+            Bukkit.broadcastMessage(url);
         }
-        
-        JsonChatBroadcasterV17R1.broadcastJson(urlMessage);
     }
 
     /**
