@@ -26,7 +26,7 @@ public class JsonChatBroadcasterV17R2 {
      * @param src JSON-Chat形式のデータ
      */
     public static void broadcastJson(String src) {
-        
+
         IChatBaseComponent comp = ChatSerializer.a(src);
         PacketPlayOutChat packet = new PacketPlayOutChat(comp, true);
         for ( Player player : Bukkit.getOnlinePlayers() ) {

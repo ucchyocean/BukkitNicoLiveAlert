@@ -68,7 +68,7 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
             String src = args[1];
             JsonChatBroadcasterV17R1.broadcastJson(src);
             return true;
-            
+
         }
 
         return false;
