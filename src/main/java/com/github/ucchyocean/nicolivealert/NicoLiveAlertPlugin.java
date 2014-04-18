@@ -72,7 +72,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         String ver = getServer().getBukkitVersion();
         isV17R1 = ver.startsWith("1.7.2-R");
         isV17R2 = ver.startsWith("1.7.5-R");
-        isV17R3 = ver.startsWith("1.7.8-R");
+        isV17R3 = (ver.startsWith("1.7.8-R") || ver.startsWith("1.7.9-R"));
 
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
