@@ -27,6 +27,8 @@ messageTemplate5: ''
 # 放送URLの通知用メッセージのテンプレート。
 # tellraw コマンドの形式で記載ができます。
 # $url は放送のURLで、置き換えられます。
+# （CraftBukkit 1.6.4 以前のバージョンを利用している場合は、この設定は適用されません。
+#   放送URLがそのまま表示されます。）
 messageTemplateURL: '{"text":"＞放送ページはこちら！＜","color":"red","underlined":"true","clickEvent":{"action":"open_url","value":"$url"}}'
 
 # コミュニティのニックネーム設定。

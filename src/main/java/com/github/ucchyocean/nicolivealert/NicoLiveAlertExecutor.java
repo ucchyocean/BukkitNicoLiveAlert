@@ -66,7 +66,7 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
 
         } else if ( args[0].equalsIgnoreCase("test") && args.length >= 2 ) {
             String src = args[1];
-            JsonChatBroadcasterV17R1.broadcastJson(src);
+            JsonChatBroadcaster.broadcastJson(src);
             return true;
 
         }

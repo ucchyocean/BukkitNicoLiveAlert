@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.ucchyocean</groupId>
   <artifactId>NicoLiveAlert</artifactId>
-  <version>2.0.3pre</version>
+  <version>2.0.4</version>
   <description>Niconico Live Alert Plugin.</description>
 
   <licenses>
@@ -37,6 +37,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -56,23 +57,8 @@
   <dependencies>
     <dependency>
       <groupId>org.bukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
-      <version>1.7.2-R0.3</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
-      <version>1.7.5-R0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
-      <version>1.7.8-R0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>craftbukkit</artifactId>
-      <version>1.7.9-R0.1-SNAPSHOT</version>
+      <artifactId>bukkit</artifactId>
+      <version>1.7.9-R0.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

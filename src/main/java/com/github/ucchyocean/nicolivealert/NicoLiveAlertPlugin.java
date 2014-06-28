@@ -46,9 +46,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     private NicoLiveConnector connector;
     protected List<String> titleKeywords;
 
-    private boolean isV17R1;
-    private boolean isV17R2;
-    private boolean isV17R3;
+    private boolean isV17xOrLater;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -70,9 +68,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
         // サーバーバージョンの取得
         String ver = getServer().getBukkitVersion();
-        isV17R1 = ver.startsWith("1.7.2-R");
-        isV17R2 = ver.startsWith("1.7.5-R");
-        isV17R3 = (ver.startsWith("1.7.8-R") || ver.startsWith("1.7.9-R"));
+        isV17xOrLater = ver.startsWith("1.7.");
 
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
@@ -220,12 +216,8 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         String url = String.format(URL_TEMPLATE, event.getId());
         urlMessage = urlMessage.replace(KEYWORD_URL, url);
 
-        if ( isV17R1 ) {
-            JsonChatBroadcasterV17R1.broadcastJson(urlMessage);
-        } else if ( isV17R2 ) {
-            JsonChatBroadcasterV17R2.broadcastJson(urlMessage);
-        } else if ( isV17R3 ) {
-            JsonChatBroadcasterV17R3.broadcastJson(urlMessage);
+        if ( isV17xOrLater ) {
+            JsonChatBroadcaster.broadcastJson(urlMessage);
         } else {
             Bukkit.broadcastMessage(url);
         }
