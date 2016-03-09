@@ -16,7 +16,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 
 /**
  * @author ucchy
@@ -42,7 +41,6 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     protected List<String> user;
     protected MemorySection communityNicknames;
     protected MemorySection userNicknames;
-    private BukkitTask task;
     private NicoLiveConnector connector;
     protected List<String> titleKeywords;
 
@@ -93,9 +91,9 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
      * スレッドを起動してアラートサーバーの監視を開始する
      */
     protected boolean connect() {
-        if ( task == null ) {
+        if ( connector == null ) {
             connector = new NicoLiveConnector(this);
-            task = getServer().getScheduler().runTaskAsynchronously(this, connector);
+            connector.runTaskAsynchronously(this);
             return true;
         }
         return false;
@@ -105,10 +103,9 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
      * アラートサーバーとの接続を切断する
      */
     protected boolean disconnect() {
-        if ( task != null ) {
+        if ( connector != null ) {
             connector.cancel();
-            getServer().getScheduler().cancelTask(task.getTaskId());
-            task = null;
+            connector = null;
             return true;
         }
         return false;
