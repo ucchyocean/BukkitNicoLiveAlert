@@ -3,14 +3,24 @@ main: com.github.ucchyocean.nicolivealert.NicoLiveAlertPlugin
 version: ${project.version}
 author: ucchy
 description: ${project.description}
+
 commands:
   nicolivealert:
-    description: Niconico live alert plugin maintenance command.
+    description: Nico Live Alert plugin command.
     aliases: nla
-    usage: /<command> disconnect|connect|reload
-    permission: nicolivealert
+    usage: /<command> [list|disconnect|connect|reload]
+    permission: nicolivealert.command
     permission-message: You don't have permission <permission>
+
 permissions:
-  nicolivealert:
-    description:  Niconico live alert plugin maintenance command.
+  nicolivealert.command:
+    description: Command permission.
+    default: true
+  nicolivealert.admin:
+    description: Administration Commands permission.
     default: op
+  nicolivealert.*:
+    description: All Permissions of NicoLiveAlert plugin.
+    children:
+      nicolivealert.command: true
+      nicolivealert.admin: true

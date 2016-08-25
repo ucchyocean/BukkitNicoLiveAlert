@@ -14,6 +14,7 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +42,7 @@ public class NicoLiveConnector extends BukkitRunnable {
 
     private Pattern pattern;
     private NicoLiveAlertPlugin plugin;
-    protected boolean isCanceled;
+    private boolean isCanceled;
 
     /**
      * コンストラクタ。引数に、イベント通知先のNicoLiveAlertPluginを指定する。
@@ -70,10 +71,8 @@ public class NicoLiveConnector extends BukkitRunnable {
     /**
      * NicoLiveConnectorを停止する。
      */
-    @Override
-    public void cancel() {
+    public void stop() {
         isCanceled = true;
-        //super.cancel();
     }
 
     /**
@@ -98,12 +97,15 @@ public class NicoLiveConnector extends BukkitRunnable {
         int port = Integer.parseInt(server[1]);
         String thread = server[2];
 
+        Logger logger = plugin.getLogger();
+        NicoLiveAlertConfig config = plugin.getNLAConfig();
+
         Socket socket = null;
         DataOutputStream out = null;
         DataInputStream in = null;
 
         try {
-            plugin.logger.info("Connecting to " + addr + ":" + port + " ... ");
+            logger.info("Connecting to " + addr + ":" + port + " ... ");
 
             socket = new Socket(addr, port);
             out = new DataOutputStream(socket.getOutputStream());
@@ -112,7 +114,7 @@ public class NicoLiveConnector extends BukkitRunnable {
             out.writeBytes("<thread thread=\"" + thread + "\" version=\"20061206\" res_from=\"-1\"/>\0");
             out.flush();
 
-            plugin.logger.info("Connected to alert server.");
+            logger.info("Connected to alert server.");
 
             int len;
             byte[] buffer = new byte[1024];
@@ -124,8 +126,8 @@ public class NicoLiveConnector extends BukkitRunnable {
 
                     //plugin.logger.finest(matcher.group(0));
 
-                    if ( plugin.community.contains(matcher.group(2)) ||
-                            plugin.user.contains(matcher.group(3)) ) {
+                    if ( config.getCommunity().contains(matcher.group(2)) ||
+                            config.getUser().contains(matcher.group(3)) ) {
                         // 一致するコミュニティまたはユーザーが見つかった
 
                         String id = matcher.group(1);
@@ -134,7 +136,7 @@ public class NicoLiveConnector extends BukkitRunnable {
 
                         // 前回通知した放送と同じIDなら、無視する。
                         if ( id.equals(lastAlertID) ) {
-                            plugin.logger.info("Duplicated alert found!(lv" + id +") This alert was ignored.");
+                            logger.info("Duplicated alert found!(lv" + id +") This alert was ignored.");
                             continue;
                         }
                         lastAlertID = id;
@@ -153,13 +155,13 @@ public class NicoLiveConnector extends BukkitRunnable {
                         String communityNickname = communityName;
                         String userNickname = user;
 
-                        if ( plugin.communityNicknames != null
-                                && plugin.communityNicknames.contains(community) ) {
-                            communityNickname = plugin.communityNicknames.get(community).toString();
+                        if ( config.getCommunityNicknames() != null
+                                && config.getCommunityNicknames().containsKey(community) ) {
+                            communityNickname = config.getCommunityNicknames().get(community);
                         }
-                        if ( plugin.userNicknames != null
-                                && plugin.userNicknames.contains(user) ) {
-                            userNickname = plugin.userNicknames.get(user).toString();
+                        if ( config.getUserNicknames() != null
+                                && config.getUserNicknames().containsKey(user) ) {
+                            userNickname = config.getUserNicknames().get(user);
                         }
 
                         // イベントを作成して、コールする
@@ -202,7 +204,7 @@ public class NicoLiveConnector extends BukkitRunnable {
             }
         }
 
-        plugin.logger.info("Disconnected from alert server.");
+        logger.info("Disconnected from alert server.");
     }
 
     /**

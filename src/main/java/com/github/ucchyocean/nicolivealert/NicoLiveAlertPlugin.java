@@ -6,13 +6,10 @@
 package com.github.ucchyocean.nicolivealert;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,21 +27,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     private static final String KEYWORD_TITLE = "$title";
     private static final String KEYWORD_URL = "$url";
 
-    protected Logger logger;
-    private String messageTemplate;
-    private String messageTemplate2;
-    private String messageTemplate3;
-    private String messageTemplate4;
-    private String messageTemplate5;
-    private String messageTemplateURL;
-    protected List<String> community;
-    protected List<String> user;
-    protected MemorySection communityNicknames;
-    protected MemorySection userNicknames;
-    private NicoLiveConnector connector;
-    protected List<String> titleKeywords;
+    private static NicoLiveAlertPlugin instance;
 
-    private boolean isV17xOrLater;
+    private Logger logger;
+    private NicoLiveConnector connector;
+    private NicoLiveAlertConfig config;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -56,17 +43,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         logger = getLogger();
 
         // コンフィグのリロード
-        try {
-            reloadConfigFile();
-        } catch (NicoLiveAlertException e) {
-            e.printStackTrace();
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-
-        // サーバーバージョンの取得
-        String ver = getServer().getBukkitVersion();
-        isV17xOrLater = ver.startsWith("1.7.");
+        config = NicoLiveAlertConfig.load();
 
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
@@ -112,60 +89,6 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     }
 
     /**
-     * config.ymlの読み出し処理。
-     * @throws NicoLiveAlertException
-     */
-    protected void reloadConfigFile() throws NicoLiveAlertException {
-
-        File configFile = new File(getDataFolder(), "config.yml");
-        if ( !configFile.exists() ) {
-            Utility.copyFileFromJar(getFile(), configFile, "config_ja.yml");
-        }
-
-        reloadConfig();
-        FileConfiguration config = getConfig();
-
-        community = config.getStringList("community");
-        if ( community == null ) {
-            community = new ArrayList<String>();
-        }
-        user = config.getStringList("user");
-        if ( user == null ) {
-            user = new ArrayList<String>();
-        }
-
-        Object communityNicknames_temp = config.get("communityNicknames");
-        if ( communityNicknames_temp != null ) {
-            communityNicknames = (MemorySection)communityNicknames_temp;
-        }
-        Object userNicknames_temp = config.get("userNicknames");
-        if ( userNicknames_temp != null ) {
-            userNicknames = (MemorySection)userNicknames_temp;
-        }
-
-        messageTemplate = Utility.replaceColorCode(
-                config.getString("messageTemplate", "&cニコ生が開始しました！") );
-        messageTemplate2 = Utility.replaceColorCode(
-                config.getString("messageTemplate2", "&bコミュニティ：$com") );
-        messageTemplate3 = Utility.replaceColorCode(
-                config.getString("messageTemplate3", "&b放送者：$user") );
-        messageTemplate4 = Utility.replaceColorCode(
-                config.getString("messageTemplate4", "&b$title") );
-        messageTemplate5 = Utility.replaceColorCode(
-                config.getString("messageTemplate5", "") );
-
-        messageTemplateURL = config.getString("messageTemplateURL",
-                "{\"text\":\"＞放送ページはこちら！＜\","
-                + "\"color\":\"red\",\"underlined\":\"true\",\"clickEvent\":{"
-                + "\"action\":\"open_url\",\"value\":\"$url\"}}");
-
-        titleKeywords = config.getStringList("titleKeywords");
-        if ( titleKeywords == null ) {
-            titleKeywords = new ArrayList<String>();
-        }
-    }
-
-    /**
      * 監視対象の放送が見つかったときに呼び出されるメソッド
      * @param event イベント。見つかった放送の詳細が格納される。
      */
@@ -174,49 +97,62 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
         // タイトルキーワードが設定されており、キーワードが見つからない場合は、
         // 通知せずに終了する。一応、ログは出力しておく。
-        if ( titleKeywords.size() > 0 ) {
+        if ( config.getTitleKeywords().size() > 0 ) {
             boolean keywordFound = false;
-            for ( String keyword : titleKeywords ) {
+            for ( String keyword : config.getTitleKeywords() ) {
                 if ( event.getTitle().contains(keyword) ) {
                     keywordFound = true;
                     break;
                 }
             }
             if ( !keywordFound ) {
-                logger.info("Alert was found. But title didn't contain the keywords. " + event.getId());
+                logger.info("Alert was found, but title didn't contain the keywords. "
+                        + event.getId() + " [" + event.getTitle() + "]");
                 return;
             }
         }
 
         // 各通知行をキーワードで置き換えして、ブロードキャストに流す。
-        String startMessage = replaceKeywords(messageTemplate, event);
+        String startMessage = replaceKeywords(config.getMessageTemplate(), event);
         getServer().broadcastMessage(startMessage);
 
-        if ( !messageTemplate2.equals("") ) {
-            String startMessage2 = replaceKeywords(messageTemplate2, event);
+        if ( !config.getMessageTemplate2().equals("") ) {
+            String startMessage2 = replaceKeywords(config.getMessageTemplate2(), event);
             getServer().broadcastMessage(startMessage2);
         }
-        if ( !messageTemplate3.equals("") ) {
-            String startMessage3 = replaceKeywords(messageTemplate3, event);
+        if ( !config.getMessageTemplate3().equals("") ) {
+            String startMessage3 = replaceKeywords(config.getMessageTemplate3(), event);
             getServer().broadcastMessage(startMessage3);
         }
-        if ( !messageTemplate4.equals("") ) {
-            String startMessage4 = replaceKeywords(messageTemplate4, event);
+        if ( !config.getMessageTemplate4().equals("") ) {
+            String startMessage4 = replaceKeywords(config.getMessageTemplate4(), event);
             getServer().broadcastMessage(startMessage4);
         }
-        if ( !messageTemplate5.equals("") ) {
-            String startMessage5 = replaceKeywords(messageTemplate5, event);
+        if ( !config.getMessageTemplate5().equals("") ) {
+            String startMessage5 = replaceKeywords(config.getMessageTemplate5(), event);
             getServer().broadcastMessage(startMessage5);
         }
 
-        String urlMessage = replaceKeywords(messageTemplateURL, event);
+        String urlMessage = replaceKeywords(config.getMessageTemplateURL(), event);
         String url = String.format(URL_TEMPLATE, event.getId());
         urlMessage = urlMessage.replace(KEYWORD_URL, url);
 
-        if ( isV17xOrLater ) {
-            JsonChatBroadcaster.broadcastJson(urlMessage);
+        if ( Utility.isCB17orLater() ) {
+            broadcastJson(urlMessage);
         } else {
             Bukkit.broadcastMessage(url);
+        }
+    }
+
+    /**
+     * JSON-Chat形式のデータをブロードキャストします。
+     * @param src JSON-Chat形式のデータ
+     */
+    public static void broadcastJson(String src) {
+        for ( Player p : Utility.getOnlinePlayers() ) {
+            Bukkit.dispatchCommand(
+                    Bukkit.getConsoleSender(),
+                    "tellraw " + p.getName() + " " + src);
         }
     }
 
@@ -239,5 +175,39 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
             result = result.replace(KEYWORD_TITLE, event.getTitle());
         }
         return result;
+    }
+
+    /**
+     * NicoLiveAlertのコンフィグを返す
+     * @return コンフィグ
+     */
+    public NicoLiveAlertConfig getNLAConfig() {
+        return config;
+    }
+
+    /**
+     * NicoLiveAlertのコンフィグを再読み込みする
+     */
+    public void reloadNLAConfig() {
+        config = NicoLiveAlertConfig.load();
+    }
+
+    /**
+     * NicoLiveAlertのインスタンスを返す
+     * @return NicoLiveAlert
+     */
+    public static NicoLiveAlertPlugin getInstance() {
+        if ( instance == null ) {
+            instance = (NicoLiveAlertPlugin)Bukkit.getPluginManager().getPlugin("NicoLiveAlert");
+        }
+        return instance;
+    }
+
+    /**
+     * このプラグインのFileを返す
+     * @return File
+     */
+    public static File getJarFile() {
+        return getInstance().getFile();
     }
 }
