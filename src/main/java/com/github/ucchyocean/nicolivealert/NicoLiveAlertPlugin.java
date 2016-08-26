@@ -6,7 +6,6 @@
 package com.github.ucchyocean.nicolivealert;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -29,7 +28,6 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
 
     private static NicoLiveAlertPlugin instance;
 
-    private Logger logger;
     private NicoLiveConnector connector;
     private NicoLiveAlertConfig config;
 
@@ -40,10 +38,8 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
 
-        logger = getLogger();
-
         // コンフィグのリロード
-        config = NicoLiveAlertConfig.load();
+        reloadNLAConfig();
 
         // コマンドをサーバーに登録
         getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
@@ -106,7 +102,7 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
                 }
             }
             if ( !keywordFound ) {
-                logger.info("Alert was found, but title didn't contain the keywords. "
+                getLogger().info("Alert was found, but title didn't contain the keywords. "
                         + event.getId() + " [" + event.getTitle() + "]");
                 return;
             }

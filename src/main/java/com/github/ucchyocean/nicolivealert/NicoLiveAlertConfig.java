@@ -1,5 +1,7 @@
-/**
- *
+/*
+ * @author     ucchy
+ * @license    LGPLv3
+ * @copyright  Copyright ucchy 2016
  */
 package com.github.ucchyocean.nicolivealert;
 

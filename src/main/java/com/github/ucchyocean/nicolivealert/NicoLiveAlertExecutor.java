@@ -46,8 +46,8 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
                 return true;
             }
             if ( plugin.disconnect() ) {
-                sender.sendMessage("Nico Live Alert Plugin was disconnected from alert server.");
-                plugin.getLogger().info("Nico Live Alert Plugin was disconnected from alert server.");
+                sender.sendMessage("Nico Live Alert Plugin disconnected from alert server.");
+                plugin.getLogger().info("Nico Live Alert Plugin disconnected from alert server.");
             } else {
                 sender.sendMessage("Nico Live Alert Plugin has disconnected already.");
             }
@@ -59,8 +59,8 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
                 return true;
             }
             if ( plugin.connect() ) {
-                sender.sendMessage("Nico Live Alert Plugin was connected to alert server.");
-                plugin.getLogger().info("Nico Live Alert Plugin was connected to alert server.");
+                sender.sendMessage("Nico Live Alert Plugin connected to alert server.");
+                plugin.getLogger().info("Nico Live Alert Plugin connected to alert server.");
             } else {
                 sender.sendMessage("Nico Live Alert Plugin has connected already.");
             }
