@@ -13,13 +13,13 @@ import org.bukkit.command.CommandSender;
  * @author ucchy
  * コマンド実行クラス
  */
-public class NicoLiveAlertExecutor implements CommandExecutor {
+public class NicoLiveAlertCommand implements CommandExecutor {
 
     private static final String ADMIN_PERMISSION = "nicolivealert.admin";
 
     private NicoLiveAlertPlugin plugin;
 
-    public NicoLiveAlertExecutor(NicoLiveAlertPlugin plugin) {
+    public NicoLiveAlertCommand(NicoLiveAlertPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -31,13 +31,14 @@ public class NicoLiveAlertExecutor implements CommandExecutor {
             CommandSender sender, Command command, String label, String[] args) {
 
         if ( args.length == 0 ) {
-            // TODO listコマンドの実行
+            // listコマンドの実行
+            plugin.sendAlertHistory(sender, true);
             return true;
         }
 
         if ( args[0].equalsIgnoreCase("list") ) {
-            // TODO listコマンドの実行
-
+            // listコマンドの実行
+            plugin.sendAlertHistory(sender, true);
             return true;
 
         } else if ( args[0].equalsIgnoreCase("disconnect") ) {

@@ -13,7 +13,7 @@ import org.bukkit.configuration.ConfigurationSection;
  * ニコ生アラートプラグインの履歴クラス
  * @author ucchy
  */
-public class AlertHistory {
+public class NicoLiveAlertObject {
 
     /** 放送ID。lv123456 の lv を抜いた文字列になる。 */
     private String id;
@@ -36,23 +36,30 @@ public class AlertHistory {
     private Date startDate;
 
     /**
-     * 引数なしのコンストラクタ（外部からのアクセス不可）
+     * コンストラクタ（引数無しコンストラクタは外部からのアクセス禁止）
      */
-    private AlertHistory() {
+    private NicoLiveAlertObject() {
     }
 
     /**
      * コンストラクタ
-     * @param event 履歴作成元のNicoLiveAlertFoundEvent
+     * @param id 放送ID
+     * @param community コミュニティID
+     * @param user ユーザーID
+     * @param title 放送タイトル
+     * @param communityName 放送しているコミュニティ名
+     * @param communityNickname コミュニティニックネーム
+     * @param userNickname ユーザーニックネーム
      */
-    protected AlertHistory(NicoLiveAlertFoundEvent event) {
-        this.id = event.getId();
-        this.community = event.getCommunity();
-        this.user = event.getUser();
-        this.title = event.getTitle();
-        this.communityName = event.getCommunityName();
-        this.communityNickname = event.getCommunityNickname();
-        this.userNickname = event.getUserNickname();
+    protected NicoLiveAlertObject(String id, String community, String user, String title,
+            String communityName, String communityNickname, String userNickname) {
+        this.id = id;
+        this.community = community;
+        this.user = user;
+        this.title = title;
+        this.communityName = communityName;
+        this.communityNickname = communityNickname;
+        this.userNickname = userNickname;
         this.startDate = new Date();
     }
 
@@ -61,8 +68,8 @@ public class AlertHistory {
      * @param section AlertHistoryが保存されたConfigurationSection
      * @return ロードされたAlertHistory
      */
-    protected static AlertHistory loadFromConfigSection(ConfigurationSection section) {
-        AlertHistory history = new AlertHistory();
+    protected static NicoLiveAlertObject loadFromConfigSection(ConfigurationSection section) {
+        NicoLiveAlertObject history = new NicoLiveAlertObject();
         history.id = section.getString("id");
         history.community = section.getString("community");
         history.user = section.getString("user");
@@ -87,6 +94,15 @@ public class AlertHistory {
         section.set("communityNickname", communityNickname);
         section.set("userNickname", userNickname);
         section.set("startDate", startDate.getTime());
+    }
+
+    /**
+     * このオブジェクトの文字列表現を返す
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return String.format("Alert{id=%s,com=%s,title=%s}}", id, community, title);
     }
 
     // 以下、自動生成のgetterメソッド

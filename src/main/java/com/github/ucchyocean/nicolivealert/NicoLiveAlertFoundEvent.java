@@ -16,42 +16,15 @@ public class NicoLiveAlertFoundEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
 
-    /** 放送ID。lv123456 の lv を抜いた文字列になる。 */
-    private String id;
-    /** コミュニティID。co12345 みたいな感じの文字列になる。 */
-    private String community;
-    /** ユーザーID。 */
-    private String user;
-
-    /** 放送タイトル */
-    private String title;
-    /** 放送しているコミュニティ名 */
-    private String communityName;
-
-    /** コミュニティニックネーム */
-    private String communityNickname;
-    /** ユーザーニックネーム */
-    private String userNickname;
+    /** ニコ生アラートの内容 */
+    private NicoLiveAlertObject alert;
 
     /**
      * コンストラクタ
-     * @param id 放送ID
-     * @param community コミュニティID
-     * @param user ユーザーID
-     * @param title 放送タイトル
-     * @param communityName 放送しているコミュニティ名
-     * @param communityNickname コミュニティニックネーム
-     * @param userNickname ユーザーニックネーム
+     * @param alert 見つかったニコ生アラート
      */
-    public NicoLiveAlertFoundEvent(String id, String community, String user, String title,
-            String communityName, String communityNickname, String userNickname) {
-        this.id = id;
-        this.community = community;
-        this.user = user;
-        this.title = title;
-        this.communityName = communityName;
-        this.communityNickname = communityNickname;
-        this.userNickname = userNickname;
+    public NicoLiveAlertFoundEvent(NicoLiveAlertObject alert) {
+        this.alert = alert;
     }
 
     /**
@@ -73,52 +46,10 @@ public class NicoLiveAlertFoundEvent extends Event {
     }
 
     /**
-     * @return 放送IDを返す
+     * アラートの内容を返す。
+     * @return アラート
      */
-    public String getId() {
-        return id;
+    public NicoLiveAlertObject getAlert() {
+        return alert;
     }
-
-    /**
-     * @return コミュニティIDを返す
-     */
-    public String getCommunity() {
-        return community;
-    }
-
-    /**
-     * @return ユーザーIDを返す
-     */
-    public String getUser() {
-        return user;
-    }
-
-    /**
-     * @return 放送タイトルを返す
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * @return 放送しているコミュニティ名を返す
-     */
-    public String getCommunityName() {
-        return communityName;
-    }
-
-    /**
-     * @return コミュニティニックネームを返す
-     */
-    public String getCommunityNickname() {
-        return communityNickname;
-    }
-
-    /**
-     * @return ユーザーニックネームを返す
-     */
-    public String getUserNickname() {
-        return userNickname;
-    }
-
 }

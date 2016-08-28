@@ -71,8 +71,10 @@ public class NicoLiveConnector extends BukkitRunnable {
     /**
      * NicoLiveConnectorを停止する。
      */
-    public void stop() {
+    @Override
+    public void cancel() {
         isCanceled = true;
+        super.cancel();
     }
 
     /**
@@ -166,7 +168,9 @@ public class NicoLiveConnector extends BukkitRunnable {
 
                         // イベントを作成して、コールする
                         NicoLiveAlertFoundEvent event = new NicoLiveAlertFoundEvent(
-                                id, community, user, title, communityName, communityNickname, userNickname);
+                                new NicoLiveAlertObject(
+                                    id, community, user, title,
+                                    communityName, communityNickname, userNickname));
                         plugin.getServer().getPluginManager().callEvent(event);
                     }
                 }

@@ -15,21 +15,25 @@ user: []
 # $com はコミュニティ名(ニックネームがある場合は、ニックネーム)で、
 # $user はユーザーID(ニックネームがある場合は、ニックネーム)で、
 # $title は放送タイトルで、置き換えられます。
+# $start は放送開始時刻で置き換えられます。
+# $elapsed は放送開始からの経過時間（分）で置き換えられます。
 # &? はカラーコードに置き換えられます。
+# \n は改行コードに置き換えられます。
 # 詳細はトピックをご参照ください。
 # http://forum.minecraftuser.jp/viewtopic.php?f=38&t=7768
-messageTemplate: '&cニコ生が開始しました！'
-messageTemplate2: '&bコミュニティ：$com'
-messageTemplate3: '&b放送者：$user'
-messageTemplate4: '&b$title'
-messageTemplate5: ''
+alertMessageTemplate: '&cニコ生が開始しました！\n&bコミュニティ：$com\n&b放送者：$user\n&b$title'
+
+# 履歴通知時のメッセージのテンプレート。
+# プレイヤーがログインしたときや、/nla list コマンドを実行したときに表示されます。
+# alertMessageTemplate と同じキーワードが使用できます。
+historyMessageTemplate: '&cニコ生 $elapsed分経過\n&b$title'
 
 # 放送URLの通知用メッセージのテンプレート。
 # tellraw コマンドの形式で記載ができます。
 # $url は放送のURLで、置き換えられます。
 # （CraftBukkit 1.6.4 以前のバージョンを利用している場合は、この設定は適用されません。
 #   放送URLがそのまま表示されます。）
-messageTemplateURL: '{"text":"＞放送ページはこちら！＜","color":"red","underlined":"true","clickEvent":{"action":"open_url","value":"$url"}}'
+alertURLTemplate: '{"text":"＞放送ページはこちら！＜","color":"red","underlined":"true","clickEvent":{"action":"open_url","value":"$url"}}'
 
 # コミュニティのニックネーム設定。
 communityNicknames:
@@ -45,4 +49,12 @@ userNicknames:
 # “いずれのキーワードも含まれていない”場合は、通知が行われません。
 titleKeywords: []
 
-#
+# 放送の履歴を保存する個数。
+# 0から10までの数値を指定できます。
+# 保存された放送履歴は、プレイヤーがサーバーにログインしたときに表示されます。
+alertHistoryCount: 3
+
+# 放送の履歴を保存する期間（単位：分）。
+# 0か1440までの数値を指定できます。
+alertHistoryTime: 360
+

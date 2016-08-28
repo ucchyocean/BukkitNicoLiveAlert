@@ -21,16 +21,14 @@ public class NicoLiveAlertConfig {
 
     private List<String> community;
     private List<String> user;
-    private String messageTemplate;
-    private String messageTemplate2;
-    private String messageTemplate3;
-    private String messageTemplate4;
-    private String messageTemplate5;
-    private String messageTemplateURL;
+    private String alertMessageTemplate;
+    private String historyMessageTemplate;
+    private String alertURLTemplate;
     private HashMap<String, String> communityNicknames;
     private HashMap<String, String> userNicknames;
     private List<String> titleKeywords;
-    private int notifyAlertNumOnServerJoin;
+    private int alertHistoryCount;
+    private int alertHistoryTime;
 
     /**
      * コンストラクタ（外部からのアクセス禁止）
@@ -69,18 +67,15 @@ public class NicoLiveAlertConfig {
             conf.user = new ArrayList<String>();
         }
 
-        conf.messageTemplate = Utility.replaceColorCode(
-                config.getString("messageTemplate", "&cニコ生が開始しました！") );
-        conf.messageTemplate2 = Utility.replaceColorCode(
-                config.getString("messageTemplate2", "&bコミュニティ：$com") );
-        conf.messageTemplate3 = Utility.replaceColorCode(
-                config.getString("messageTemplate3", "&b放送者：$user") );
-        conf.messageTemplate4 = Utility.replaceColorCode(
-                config.getString("messageTemplate4", "&b$title") );
-        conf.messageTemplate5 = Utility.replaceColorCode(
-                config.getString("messageTemplate5", "") );
+        conf.alertMessageTemplate = Utility.replaceColorCode(
+                config.getString("alertMessageTemplate",
+                        "&cニコ生が開始しました！\n&bコミュニティ：$com\n&b放送者：$user\n&b$title") );
 
-        conf.messageTemplateURL = config.getString("messageTemplateURL",
+        conf.historyMessageTemplate = Utility.replaceColorCode(
+                config.getString("historyMessageTemplate",
+                        "&cニコ生 $elapsed分経過\n&b$title") );
+
+        conf.alertURLTemplate = config.getString("alertURLTemplate",
                 "{\"text\":\"＞放送ページはこちら！＜\","
                 + "\"color\":\"red\",\"underlined\":\"true\",\"clickEvent\":{"
                 + "\"action\":\"open_url\",\"value\":\"$url\"}}");
@@ -108,9 +103,13 @@ public class NicoLiveAlertConfig {
             conf.titleKeywords = new ArrayList<String>();
         }
 
-        conf.notifyAlertNumOnServerJoin = config.getInt("notifyAlertNumOnServerJoin", 3);
-        if ( conf.notifyAlertNumOnServerJoin < 0 ) conf.notifyAlertNumOnServerJoin = 0;
-        if ( conf.notifyAlertNumOnServerJoin > 10 ) conf.notifyAlertNumOnServerJoin = 10;
+        conf.alertHistoryCount = config.getInt("alertHistoryCount", 3);
+        if ( conf.alertHistoryCount < 0 ) conf.alertHistoryCount = 0;
+        if ( conf.alertHistoryCount > 10 ) conf.alertHistoryCount = 10;
+
+        conf.alertHistoryTime = config.getInt("alertHistoryTime", 360);
+        if ( conf.alertHistoryTime < 0 ) conf.alertHistoryTime = 0;
+        if ( conf.alertHistoryTime > 1440 ) conf.alertHistoryTime = 1440;
 
         return conf;
     }
@@ -125,28 +124,16 @@ public class NicoLiveAlertConfig {
         return user;
     }
 
-    public String getMessageTemplate() {
-        return messageTemplate;
+    public String getAlertMessageTemplate() {
+        return alertMessageTemplate;
     }
 
-    public String getMessageTemplate2() {
-        return messageTemplate2;
+    public String getHistoryMessageTemplate() {
+        return historyMessageTemplate;
     }
 
-    public String getMessageTemplate3() {
-        return messageTemplate3;
-    }
-
-    public String getMessageTemplate4() {
-        return messageTemplate4;
-    }
-
-    public String getMessageTemplate5() {
-        return messageTemplate5;
-    }
-
-    public String getMessageTemplateURL() {
-        return messageTemplateURL;
+    public String getAlertURLTemplate() {
+        return alertURLTemplate;
     }
 
     public HashMap<String, String> getCommunityNicknames() {
@@ -161,7 +148,11 @@ public class NicoLiveAlertConfig {
         return titleKeywords;
     }
 
-    public int getNotifyAlertNumOnServerJoin() {
-        return notifyAlertNumOnServerJoin;
+    public int getAlertHistoryCount() {
+        return alertHistoryCount;
+    }
+
+    public int getAlertHistoryTime() {
+        return alertHistoryTime;
     }
 }

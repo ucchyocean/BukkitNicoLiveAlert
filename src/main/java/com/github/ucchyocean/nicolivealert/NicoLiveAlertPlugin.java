@@ -6,11 +6,14 @@
 package com.github.ucchyocean.nicolivealert;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -25,11 +28,14 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     private static final String KEYWORD_USER = "$user";
     private static final String KEYWORD_TITLE = "$title";
     private static final String KEYWORD_URL = "$url";
+    private static final String KEYWORD_START = "$start";
+    private static final String KEYWORD_ELAPSED = "$elapsed";
 
     private static NicoLiveAlertPlugin instance;
 
     private NicoLiveConnector connector;
     private NicoLiveAlertConfig config;
+    private NicoLiveAlertHistoryContainer history;
 
     /**
      * プラグインが有効化されたときに呼び出されるメソッド
@@ -41,8 +47,11 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
         // コンフィグのリロード
         reloadNLAConfig();
 
+        // 履歴のロード
+        history = NicoLiveAlertHistoryContainer.load();
+
         // コマンドをサーバーに登録
-        getCommand("nicolivealert").setExecutor(new NicoLiveAlertExecutor(this));
+        getCommand("nicolivealert").setExecutor(new NicoLiveAlertCommand(this));
 
         // 監視イベントを登録
         getServer().getPluginManager().registerEvents(this, this);
@@ -91,52 +100,90 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     @EventHandler
     public void onAlertFound(NicoLiveAlertFoundEvent event) {
 
+        NicoLiveAlertObject alert = event.getAlert();
+
         // タイトルキーワードが設定されており、キーワードが見つからない場合は、
         // 通知せずに終了する。一応、ログは出力しておく。
         if ( config.getTitleKeywords().size() > 0 ) {
             boolean keywordFound = false;
             for ( String keyword : config.getTitleKeywords() ) {
-                if ( event.getTitle().contains(keyword) ) {
+                if ( alert.getTitle().contains(keyword) ) {
                     keywordFound = true;
                     break;
                 }
             }
             if ( !keywordFound ) {
                 getLogger().info("Alert was found, but title didn't contain the keywords. "
-                        + event.getId() + " [" + event.getTitle() + "]");
+                        + alert.getId() + " [" + alert.getTitle() + "]");
                 return;
             }
         }
 
         // 各通知行をキーワードで置き換えして、ブロードキャストに流す。
-        String startMessage = replaceKeywords(config.getMessageTemplate(), event);
-        getServer().broadcastMessage(startMessage);
-
-        if ( !config.getMessageTemplate2().equals("") ) {
-            String startMessage2 = replaceKeywords(config.getMessageTemplate2(), event);
-            getServer().broadcastMessage(startMessage2);
-        }
-        if ( !config.getMessageTemplate3().equals("") ) {
-            String startMessage3 = replaceKeywords(config.getMessageTemplate3(), event);
-            getServer().broadcastMessage(startMessage3);
-        }
-        if ( !config.getMessageTemplate4().equals("") ) {
-            String startMessage4 = replaceKeywords(config.getMessageTemplate4(), event);
-            getServer().broadcastMessage(startMessage4);
-        }
-        if ( !config.getMessageTemplate5().equals("") ) {
-            String startMessage5 = replaceKeywords(config.getMessageTemplate5(), event);
-            getServer().broadcastMessage(startMessage5);
+        String startMessage = replaceKeywords(config.getAlertMessageTemplate(), alert);
+        if ( startMessage.length() > 0 ) {
+            getServer().broadcastMessage(startMessage);
         }
 
-        String urlMessage = replaceKeywords(config.getMessageTemplateURL(), event);
-        String url = String.format(URL_TEMPLATE, event.getId());
-        urlMessage = urlMessage.replace(KEYWORD_URL, url);
+        String urlMessage = replaceKeywords(config.getAlertURLTemplate(), alert);
+        if ( urlMessage.length() > 0 ) {
+            String url = String.format(URL_TEMPLATE, alert.getId());
+            urlMessage = urlMessage.replace(KEYWORD_URL, url);
 
-        if ( Utility.isCB17orLater() ) {
-            broadcastJson(urlMessage);
-        } else {
-            Bukkit.broadcastMessage(url);
+            if ( Utility.isCB17orLater() ) {
+                broadcastJson(urlMessage);
+            } else {
+                Bukkit.broadcastMessage(url);
+            }
+        }
+
+        // 履歴に保存する
+        history.addAlert(alert);
+    }
+
+    /**
+     * プレイヤーがサーバーに接続したときに呼び出されるイベント
+     * @param event イベント
+     */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        sendAlertHistory(event.getPlayer(), false);
+    }
+
+    /**
+     * ニコ生履歴を指定されたreceiverに送る
+     * @param receiver 履歴を表示する対象
+     * @param needsNothingAlert 履歴が1つも無い場合にメッセージを送るかどうか。
+     */
+    public void sendAlertHistory(CommandSender receiver, boolean needsNothingAlert) {
+
+        if ( history.getAlerts().size() <= 0 ) {
+            if ( needsNothingAlert ) {
+                receiver.sendMessage("NicoLiveAlert history not found.");
+            }
+            return;
+        }
+
+        for ( NicoLiveAlertObject alert : history.getAlerts() ) {
+            String message = replaceKeywords(config.getHistoryMessageTemplate(), alert);
+            if ( message.length() > 0 ) {
+                receiver.sendMessage(message);
+            }
+
+            String urlMessage = replaceKeywords(config.getAlertURLTemplate(), alert);
+            if ( urlMessage.length() > 0 ) {
+                String url = String.format(URL_TEMPLATE, alert.getId());
+                urlMessage = urlMessage.replace(KEYWORD_URL, url);
+
+                if ( Utility.isCB17orLater() ) {
+                    Bukkit.dispatchCommand(
+                            Bukkit.getConsoleSender(),
+                            "tellraw " + receiver.getName() + " " + urlMessage);
+                } else {
+                    receiver.sendMessage(url);
+                }
+            }
+
         }
     }
 
@@ -155,20 +202,32 @@ public class NicoLiveAlertPlugin extends JavaPlugin implements Listener {
     /**
      * 文字列の中のキーワードを置き換えするメソッド
      * @param source 置き換え元の文字列
-     * @param event 置き換えに使用するイベント
+     * @param alert 置き換えに使用するアラート
      * @return 置き換え後の文字列
      */
-    private String replaceKeywords(String source, NicoLiveAlertFoundEvent event) {
+    private String replaceKeywords(String source, NicoLiveAlertObject alert) {
 
         String result = source;
+        if ( result.contains("\\n") ) {
+            result = result.replace("\\n", "\n");
+        }
         if ( result.contains(KEYWORD_COMMUNITY) ) {
-            result = result.replace(KEYWORD_COMMUNITY, event.getCommunityNickname());
+            result = result.replace(KEYWORD_COMMUNITY, alert.getCommunityNickname());
         }
         if ( result.contains(KEYWORD_USER) ) {
-            result = result.replace(KEYWORD_USER, event.getUserNickname());
+            result = result.replace(KEYWORD_USER, alert.getUserNickname());
         }
         if ( result.contains(KEYWORD_TITLE) ) {
-            result = result.replace(KEYWORD_TITLE, event.getTitle());
+            result = result.replace(KEYWORD_TITLE, alert.getTitle());
+        }
+        if ( result.contains(KEYWORD_START) ) {
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+            result = result.replace(KEYWORD_START, format.format(alert.getStartDate()));
+        }
+        if ( result.contains(KEYWORD_ELAPSED) ) {
+            long elapsed = System.currentTimeMillis() - alert.getStartDate().getTime();
+            int time = (int)(elapsed / 1000 / 60); // ミリ秒から分に変換
+            result = result.replace(KEYWORD_ELAPSED, time + "");
         }
         return result;
     }
