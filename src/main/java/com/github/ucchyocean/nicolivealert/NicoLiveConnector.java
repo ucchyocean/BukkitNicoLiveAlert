@@ -100,7 +100,6 @@ public class NicoLiveConnector extends BukkitRunnable {
         String thread = server[2];
 
         Logger logger = plugin.getLogger();
-        NicoLiveAlertConfig config = plugin.getNLAConfig();
 
         Socket socket = null;
         DataOutputStream out = null;
@@ -127,6 +126,8 @@ public class NicoLiveConnector extends BukkitRunnable {
                 while ( matcher.find() ) {
 
                     //plugin.logger.finest(matcher.group(0));
+
+                    NicoLiveAlertConfig config = plugin.getNLAConfig();
 
                     if ( config.getCommunity().contains(matcher.group(2)) ||
                             config.getUser().contains(matcher.group(3)) ) {
