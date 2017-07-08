@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.ucchyocean</groupId>
   <artifactId>NicoLiveAlert</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1</version>
   <description>Nico Live Alert Plugin.</description>
 
   <licenses>
@@ -39,8 +39,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -67,11 +67,6 @@
 
   <repositories>
     <repository>
-      <id>bukkit-repo</id>
-      <name>Craft Bukkit Maven Repository</name>
-      <url>http://repo.bukkit.org/content/groups/public</url>
-    </repository>
-    <repository>
       <id>spigot-repo</id>
       <name>Spigot Maven Repository</name>
       <url>https://hub.spigotmc.org/nexus/content/groups/public</url>
@@ -82,7 +77,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.10.2-R0.1-SNAPSHOT</version>
+      <version>1.12-R0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

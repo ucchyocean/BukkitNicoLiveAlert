@@ -133,9 +133,9 @@ public class NicoLiveConnector extends BukkitRunnable {
                             config.getUser().contains(matcher.group(3)) ) {
                         // 一致するコミュニティまたはユーザーが見つかった
 
-                        String id = matcher.group(1);
-                        String community = matcher.group(2);
-                        String user = matcher.group(3);
+                        final String id = matcher.group(1);
+                        final String community = matcher.group(2);
+                        final String user = matcher.group(3);
 
                         // 前回通知した放送と同じIDなら、無視する。
                         if ( id.equals(lastAlertID) ) {
@@ -144,35 +144,42 @@ public class NicoLiveConnector extends BukkitRunnable {
                         }
                         lastAlertID = id;
 
-                        String communityName, title;
-                        try {
-                            String[] coNameAndTitle = getCommunityNameAndTitle(id);
-                            communityName = coNameAndTitle[0];
-                            title = coNameAndTitle[1];
-                        } catch (NicoLiveAlertException e) {
-                            e.printStackTrace();
-                            communityName = "";
-                            title = "";
-                        }
+                        // 以降の処理を、非同期処理から同期処理に変更する。
+                        new BukkitRunnable() {
+                            public void run() {
 
-                        String communityNickname = communityName;
-                        String userNickname = user;
+                                String communityName, title;
+                                try {
+                                    String[] coNameAndTitle = getCommunityNameAndTitle(id);
+                                    communityName = coNameAndTitle[0];
+                                    title = coNameAndTitle[1];
+                                } catch (NicoLiveAlertException e) {
+                                    e.printStackTrace();
+                                    communityName = "";
+                                    title = "";
+                                }
 
-                        if ( config.getCommunityNicknames() != null
-                                && config.getCommunityNicknames().containsKey(community) ) {
-                            communityNickname = config.getCommunityNicknames().get(community);
-                        }
-                        if ( config.getUserNicknames() != null
-                                && config.getUserNicknames().containsKey(user) ) {
-                            userNickname = config.getUserNicknames().get(user);
-                        }
+                                String communityNickname = communityName;
+                                String userNickname = user;
 
-                        // イベントを作成して、コールする
-                        NicoLiveAlertFoundEvent event = new NicoLiveAlertFoundEvent(
-                                new NicoLiveAlertObject(
-                                    id, community, user, title,
-                                    communityName, communityNickname, userNickname));
-                        plugin.getServer().getPluginManager().callEvent(event);
+                                if ( config.getCommunityNicknames() != null
+                                        && config.getCommunityNicknames().containsKey(community) ) {
+                                    communityNickname = config.getCommunityNicknames().get(community);
+                                }
+                                if ( config.getUserNicknames() != null
+                                        && config.getUserNicknames().containsKey(user) ) {
+                                    userNickname = config.getUserNicknames().get(user);
+                                }
+
+                                // イベントを作成して、コールする
+                                NicoLiveAlertFoundEvent event = new NicoLiveAlertFoundEvent(
+                                        new NicoLiveAlertObject(
+                                            id, community, user, title,
+                                            communityName, communityNickname, userNickname));
+                                plugin.getServer().getPluginManager().callEvent(event);
+
+                            }
+                        }.runTask(NicoLiveAlertPlugin.getInstance());
                     }
                 }
 
